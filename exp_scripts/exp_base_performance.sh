@@ -1,6 +1,8 @@
-	#!/bin/bash
-rtt=50
-server=10.0.0.170
+#!/bin/bash
+# mahimahi http://mahimahi.mit.edu/
+# iperf http://downloads.es.net/pub/iperf/iperf-3-current.tar.gz
+
+server=10.0.2.15
 output_dir="/tmp"
 base_port=10000
 
@@ -47,7 +49,7 @@ run_exp1_loss() {
 		echo "exp1 vary loss rate $loss, RTT $1, runtime $2"
 		kill_all_iperfs
 		start_iperfs 1
-		start_flow_sync $flow_num $loss $1 0 $2 "$output/flow-loss-$loss"
+		start_flow_sync 0 $loss $1 0 $2 "$output/flow-loss-$loss"
 		flow_num=$((flow_num+1))
 	done
 	python plot.py $output "$output_dir/exp1-vary-loss-RTT-$1.txt"
@@ -63,7 +65,7 @@ run_exp1_rtt() {
 		echo "exp1 vary RTT $rtt, loss rate $1, runtime $2"
 		kill_all_iperfs
 		start_iperfs 1
-		start_flow_sync $flow_num $1 $rtt 0 $2 "$output/flow-rtt-$rtt"
+		start_flow_sync 0 $1 $rtt 0 $2 "$output/flow-rtt-$rtt"
 		flow_num=$((flow_num+1))
 	done
 	python plot.py $output "$output_dir/exp1-vary-rtt-loss-$1.txt"
