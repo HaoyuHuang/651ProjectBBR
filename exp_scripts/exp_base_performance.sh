@@ -10,7 +10,7 @@ base_rtt="$3"
 bg_traffic="$4"
 enable_tcp_dump="$5"
 monitor_interval="$6"
-output_dir="/tmp/$CC-maxb-$2-basertt-$3-BG-$4-tcpdump-$5-interval-$6"
+output_dir="/tmp/$CC-maxb-$2-basertt-$3-BG-$4-tcpdump-$5-interval-$6-$7"
 
 echo $output_dir
 
@@ -106,7 +106,7 @@ run_exp1_loss() {
 	rm -rf $output
 	mkdir $output
 	flow_num=0
-	for loss in $(seq 0.00 0.1 0.01);
+	for loss in $(seq 0.00 0.01 0.1);
 	do
 		echo "exp1 vary loss rate $loss, RTT $1, run cmd $2"
 		kill_all_iperfs
@@ -358,7 +358,7 @@ run_mix() {
 
 	for loss_rate in 0 0.02
 	do
-		for rtt in "Y" "N"
+		for rtt in "N" #"Y"
 		do
 			for start in "0" "1"
 			do
@@ -369,7 +369,7 @@ run_mix() {
 
 	for loss_rate in 0 0.02
 	do
-		for rtt in "Y" "N"
+		for rtt in "N" #"Y"
 		do
 			for start in "0" "1"
 			do
@@ -384,7 +384,7 @@ run_exp2() {
 
 	for loss_rate in 0 0.02
 	do
-		for rtt in "Y" "N"
+		for rtt in "N" #"Y"
 		do
 			run_exp2_1 $loss_rate $rtt
 		done
@@ -392,7 +392,7 @@ run_exp2() {
 
 	for loss_rate in 0 0.02
 	do
-		for rtt in "Y" "N"
+		for rtt in "N" #"Y"
 		do
 			run_exp2_2 $loss_rate $rtt
 		done
