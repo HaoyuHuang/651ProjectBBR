@@ -79,6 +79,10 @@ cleanup() {
 	fi
 
 	kill_all_iperfs
+
+	if [ $max_bandwidth != "1G" ]; then
+		sudo tc qdisc delete dev eth0 root
+	fi
 }
 
 start_iperfs() {
@@ -97,6 +101,16 @@ start_iperfs() {
 
 	if [ $enable_tcp_dump == "Y" ]; then
 		eval "sudo tcpdump -n tcp dst portrange $base_port-$(($base_port + $1)) -s 96 &"
+	fi
+
+	if [ $max_bandwidth == "10M" ]; then
+		 sudo tc qdisc add dev eth0 root tbf rate 10mbit burst 10000 limit 10000
+		 sudo tc qdisc show
+	fi
+
+	if [ $max_bandwidth == "1M" ]; then
+		 sudo tc qdisc add dev eth0 root tbf rate 10mbit burst 10000 limit 10000
+		 sudo tc qdisc show
 	fi
 }
 
@@ -186,7 +200,7 @@ run_exp2_2() {
 	mkdir $output
 	flow_num=0
 	start_iperfs 10 "$output/udp"
-	declare -a RTT=("250" "200" "150" "100" "50")
+	declare -a RTT=("50" "40" "30" "20" "10")
 
 	if [ "$2" == "N" ]; then
 		RTT=("0" "0" "0" "0" "0")
@@ -283,7 +297,7 @@ run_mix_exp2_2() {
 	mkdir $output
 	flow_num=0
 	start_iperfs 10 "$output/udp"
-	declare -a RTT=("250" "200" "150" "100" "50")
+	declare -a RTT=("50" "40" "30" "20" "10")
 
 	if [ "$2" == "N" ]; then
 		RTT=("0" "0" "0" "0" "0")
@@ -384,7 +398,7 @@ run_exp2() {
 
 	for loss_rate in 0 0.02
 	do
-		for rtt in "N" #"Y"
+		for rtt in "N" "Y"
 		do
 			run_exp2_1 $loss_rate $rtt
 		done
@@ -392,7 +406,7 @@ run_exp2() {
 
 	for loss_rate in 0 0.02
 	do
-		for rtt in "N" #"Y"
+		for rtt in "N" "Y"
 		do
 			run_exp2_2 $loss_rate $rtt
 		done
