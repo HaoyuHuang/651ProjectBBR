@@ -2,7 +2,7 @@
 # mahimahi http://mahimahi.mit.edu/
 # iperf http://downloads.es.net/pub/iperf/iperf-3-current.tar.gz
 
-server=10.0.2.15
+server=10.0.0.170
 base_port=10000
 CC="$1"
 max_bandwidth="$2"
@@ -104,12 +104,14 @@ start_iperfs() {
 	fi
 
 	if [ $max_bandwidth == "10M" ]; then
-		 sudo tc qdisc add dev eth0 root tbf rate 10mbit burst 10000 limit 10000
+		 sudo tc qdisc add dev eth0 handle 10: root tbf rate 10mbit burst 10000 limit 10000
+		 sudo tc qdisc add dev eth0 parent 10:1 handle 100: fq
 		 sudo tc qdisc show
 	fi
 
 	if [ $max_bandwidth == "1M" ]; then
-		 sudo tc qdisc add dev eth0 root tbf rate 10mbit burst 10000 limit 10000
+		 sudo tc qdisc add dev eth0 handle 10: root tbf rate 1mbit burst 1000 limit 1000
+		 sudo tc qdisc add dev eth0 parent 10:1 handle 100: fq
 		 sudo tc qdisc show
 	fi
 }
