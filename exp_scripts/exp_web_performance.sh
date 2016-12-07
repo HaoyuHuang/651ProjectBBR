@@ -9,10 +9,10 @@ loss="$5"
 bw="$6"
 
 dumpdir="$output/dump-cc-$CC-rtt-$base_rtt-loss-$loss-bw-$bw-selenium-$selenium"
-resultdir="$output/results-cc-$CC-rtt-$base_rtt-loss-$loss-bw-$bw-selenium-$selenium/"
+resultdir="$output/results-cc-$CC-rtt-$base_rtt-loss-$loss-bw-$bw-selenium-$selenium"
 input="/home/haoyuhua/Dropbox/BBR/BBR/alexa/alexa.txt"
 chromedriver="/home/haoyuhua/chromedriver"
-tries=5
+tries=1
 # input="/home/haoyuhua/BBR/alexa/alexa.txt"
 
 # rm -rf $output
@@ -86,7 +86,7 @@ replay() {
       fi
 
       if [ $selenium == "Y" ]; then
-        inner_cmd+="java -jar selenium.jar replay $chromedriver $input $tries $resultdir/result.json"
+        inner_cmd+="sudo tcpdump -i any -w $dumpdir/$site & java -jar selenium.jar replay $chromedriver http://$sitename $tries $resultdir/$site.json"
       fi
       if [ $selenium == "N" ]; then
         inner_cmd+="sudo tcpdump -i any -w $dumpdir/$site & chromium-browser --incognito --ignore-certificate-errors --user-data-dir=/tmp/nonexistent$(date +%s%N) $sitename"
@@ -97,12 +97,13 @@ replay() {
       if [ $selenium == "Y" ]; then
         eval $cmd
         sleep 2
+        tcptrace -r -l $dumpdir/$site > $resultdir/tcptrace-$site
       fi
 
-      if [ $selenium == "Y" ]; then
+      if [ $selenium == "N" ]; then
         eval $cmd &
         sleep 30;
-        tcptrace -r -l $dumpdir/$site > $resultdir/result-$site
+        tcptrace -r -l $dumpdir/$site > $resultdir/tcptrace-$site
       fi
 
   		killprogram "dnsmasq"

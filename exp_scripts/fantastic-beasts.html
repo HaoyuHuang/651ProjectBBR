@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="FileSaver.min.js"></script>
+  </head>
+  <body>
+    <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+    <div id="player"></div>
+
+    <script>
+      // 2. This code loads the IFrame Player API code asynchronously.
+      var tag = document.createElement('script');
+      var events = {};
+      // -1 (unstarted)
+      // 0 (ended)
+      // 1 (playing)
+      // 2 (paused)
+      // 3 (buffering)
+      // 5 (video cued).
+      events["-1"] = []
+      events["0"] = []
+      events["1"] = []
+      events["2"] = []
+      events["3"] = []
+      events["5"] = []
+
+      tag.src = "https://www.youtube.com/iframe_api";
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      // 3. This function creates an <iframe> (and YouTube player)
+      //    after the API code downloads.
+      var player;
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+          height: '1080',
+          width: '1920',
+          videoId: 'ViuDsy7yb8M',
+          events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange,
+            'onPlaybackQualityChange': onPlaybackQualityChange
+          }
+        });
+      }
+
+      // 4. The API will call this function when the video player is ready.
+      function onPlayerReady(event) {
+        // event.target.setPlaybackQuality('highres');
+        event.target.playVideo();
+      }
+
+      // 5. The API calls this function when the player's state changes.
+      //    The function indicates that when playing a video (state=1),
+      //    the player should play for six seconds and then stop.
+      var done = false;
+      // console.log(YT.PlayerState.ENDED)
+      function onPlayerStateChange(event) {
+        console.log(event.data);
+        if (event.data in events) {
+          events[event.data].push(Date.now())
+          console.log(events);
+        }
+        console.log(JSON.stringify(events))
+        if (event.data == YT.PlayerState.ENDED) {
+          // saveAs(, "/tmp/test.txt");
+          // var txtFile = "";
+          var file = new File([JSON.stringify(events)],"test.txt");
+          saveAs(file);
+          // var str = ;
+          // console.log("opening file...");
+          // file.open(); 
+          // console.log("writing file..");
+          // file.writeline(str);
+          // file.close();
+        }
+      }
+
+      function onPlaybackQualityChange(event) {
+        console.log(event.data);
+        if (!(event.data in events)) {
+          events[event.data] = [];
+        }
+        events[event.data].push(Date.now());
+        console.log(events);
+      }
+    </script>
+  </body>
+</html>

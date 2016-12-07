@@ -78,6 +78,8 @@ cleanup() {
 		done
 	fi
 
+	tcptrace -r -l $output/tcp.dump > $output/tcptrace
+
 	kill_all_iperfs
 
 	if [ $max_bandwidth != "1G" ]; then
@@ -100,7 +102,7 @@ start_iperfs() {
 	fi
 
 	if [ $enable_tcp_dump == "Y" ]; then
-		eval "sudo tcpdump -n tcp dst portrange $base_port-$(($base_port + $1)) -s 96 &"
+		eval "sudo tcpdump -n tcp -i any -s 96 -w $output/tcp.dump &"
 	fi
 
 	if [ $max_bandwidth == "10M" ]; then
@@ -122,7 +124,17 @@ run_exp1_loss() {
 	rm -rf $output
 	mkdir $output
 	flow_num=0
-	for loss in $(seq 0.00 0.01 0.1);
+	for loss in $(seq 0 0.01 0.1);
+	do
+		echo "exp1 vary loss rate $loss, RTT $1, run cmd $2"
+		kill_all_iperfs
+		start_iperfs 1 "$output/udp-$flow_num"
+		start_flow_sync $flow_num $loss $1 0 "N" "$output/flow-$flow_num" "-t 120"
+		flow_num=$((flow_num+1))
+		sleep 30
+		cleanup
+	done
+	for loss in $(seq 0.15 0.05 0.5);
 	do
 		echo "exp1 vary loss rate $loss, RTT $1, run cmd $2"
 		kill_all_iperfs
@@ -354,14 +366,14 @@ run_mix_exp3_6_flows() {
 		flow_num=$((flow_num+1))
 	done
 
-	sleep 60
+	sleep 120
 	
 	cleanup
 	python plot.py $output $name $monitor_interval
 }
 
 run_mix() {
-	for loss_rate in 0 0.02
+	for loss_rate in 0 #0.02
 	do
 		for index in {0..1}
 		do
@@ -372,27 +384,27 @@ run_mix() {
 		done
 	done
 
-	for loss_rate in 0 0.02
-	do
-		for rtt in "N" #"Y"
-		do
-			for start in "0" "1"
-			do
-				run_mix_exp2_1 $loss_rate $rtt $start
-			done
-		done
-	done
+	# for loss_rate in 0 0.02
+	# do
+	# 	for rtt in "N" #"Y"
+	# 	do
+	# 		for start in "0" "1"
+	# 		do
+	# 			run_mix_exp2_1 $loss_rate $rtt $start
+	# 		done
+	# 	done
+	# done
 
-	for loss_rate in 0 0.02
-	do
-		for rtt in "N" #"Y"
-		do
-			for start in "0" "1"
-			do
-				run_mix_exp2_2 $loss_rate $rtt $start
-			done
-		done
-	done
+	# for loss_rate in 0 0.02
+	# do
+	# 	for rtt in "N" #"Y"
+	# 	do
+	# 		for start in "0" "1"
+	# 		do
+	# 			run_mix_exp2_2 $loss_rate $rtt $start
+	# 		done
+	# 	done
+	# done
 }
 
 run_exp2() {
@@ -429,9 +441,9 @@ fi
 
 if [ "$7" == "exp1" ]; then
 	run_exp1_rtt 0
-	run_exp1_rtt 0.02
+	# run_exp1_rtt 0.02
 	run_exp1_loss 0
-	run_exp1_loss 10
+	# run_exp1_loss 10
 fi
 
 if [ "$7" == "exp2" ]; then
